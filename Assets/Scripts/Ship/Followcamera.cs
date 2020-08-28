@@ -48,14 +48,9 @@ public class Followcamera : MonoBehaviour
         _cam.fieldOfView = Mathf.Lerp(minFov,maxFov,ship.VelocityPercent);
         _postProcessing.profile.TryGet(out ChromaticAberration chromaticAberration);
         chromaticAberration.intensity.value = ship.VelocityPercent + 0.2f;
-        if (ship.isBoosting > 0.1f)
-        {
-            speedLines.Play();
-        }
-        else
-        {
-            speedLines.Pause();
-        }
+        
+        // Speed VFX
+        SetSpeedLines();
         
     }
 
@@ -73,7 +68,28 @@ public class Followcamera : MonoBehaviour
 
     public void SetRotation()
     {
-        transform.rotation = Quaternion.Lerp(transform.rotation,ship.transform.rotation, easeVal);
+        float turnVal = easeVal;
+        if (ship.isDrifting)
+        {
+            turnVal = easeVal / 3;
+        }
+        transform.rotation = Quaternion.Lerp(transform.rotation,ship.transform.rotation, turnVal);
     }
+
+    public void SetSpeedLines()
+    {
+        speedLines.transform.forward = -1 * (ship.transform.position - _cam.transform.position).normalized;
+        
+        if (ship.isBoosting > 0.1f)
+        {
+            speedLines.Play();
+        }
+        else
+        {
+            speedLines.Pause();
+        }
+    }
+    
+    
 }
  

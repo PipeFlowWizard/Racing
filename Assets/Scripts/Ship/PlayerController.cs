@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(ShipMovement))]
-public class PlayerController : MonoBehaviour, IController
+public class PlayerController : MonoBehaviour
 {
     
     public PlayerControls controls;
@@ -41,9 +41,7 @@ public class PlayerController : MonoBehaviour, IController
 
         controls.Gameplay.Boost.performed += ctx => _boostVal = 1;
         controls.Gameplay.Boost.canceled += ctx => _boostVal = 0;
-
-
-        controls.Gameplay.Shoot.performed += ctx => Shoot();
+        
     }
     
     void OnEnable()
@@ -66,12 +64,6 @@ public class PlayerController : MonoBehaviour, IController
 
         _shipMovement.isBoosting = _boostVal;
     }
-    
-    public void Shoot()
-    {
-        
-    }
-
     public void Throttle(float percent)
     {
         _shipMovement.Accelerate(percent);
