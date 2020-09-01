@@ -63,24 +63,6 @@ public class ShipMovement : MonoBehaviour
 
     }
 
-    public void Stop(float lerpVal)
-    {
-        if (lerpVal >= 0.1)
-        {
-            isDrifting = true;
-            if (VelocityPercent >= 0.5f)
-            {
-                Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
-                rb.AddForce(lerpVal * _acceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
-            }
-
-        }
-        else
-        {
-            isDrifting = false;
-        }
-    }
-
     public void Steer(Vector2 percent)
     {
         if (!isDrifting)
@@ -111,6 +93,24 @@ public class ShipMovement : MonoBehaviour
         else
         {
             boostAmount = 0;
+        }
+    }
+    
+    public void Stop(float lerpVal)
+    {
+        if (lerpVal >= 0.1)
+        {
+            isDrifting = true;
+            if (VelocityPercent >= 0.5f)
+            {
+                Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
+                rb.AddForce(lerpVal * _acceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
+            }
+
+        }
+        else
+        {
+            isDrifting = false;
         }
     }
 

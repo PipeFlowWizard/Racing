@@ -15,10 +15,10 @@ MonoBehaviour:
   engineClip: {fileID: 8300000, guid: bfc4501b50df7c94498fc8078a747360, type: 3}
   boostClip: {fileID: 8300000, guid: 5a1f99283070f4c40a691d0363ece1d3, type: 3}
   brakeClip: {fileID: 8300000, guid: 2152808ec9d591f439b44d4c4a551873, type: 3}
-  maxVelocity: 60
+  maxVelocity: 90
   maxAcceleration: 5
   maxHealth: 5
-  boostModifier: 2
+  boostModifier: 3
   maxDrag: 2
   minDrag: 1
   accelerationCurve:
@@ -105,6 +105,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  yawSpeed: 100
+  yawSpeed: 150
   rollSpeed: 200
   pitchSpeed: 100
