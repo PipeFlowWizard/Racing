@@ -1,117 +1,265 @@
 ﻿using Doozy.Engine.Progress;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class ShipMovement : MonoBehaviour
 {
+    //******************************************************************************************************************
+    
+    //Dependencies
     public ShipStats stats;
-    private float _velocity;
-    private float _acceleration;
-
-    private float _rollSpeed;
-    private float _yawSpeed;
-    private float _pitchSpeed;
-
-    private float boostCapacity = 100;
-
+    public Rigidbody rb;
     public AnimationCurve turnSpeedCurve;
 
-    private float turnOffset = 1;
+    //******************************************************************************************************************
 
     //Properties
-    public float VelocityPercent => _velocity / stats.maxVelocity;
-    public float Velocity => _velocity;
-    public float Acceleration => _acceleration;
+    public float VelocityPercent => _currentVelocity / stats.maxVelocity;
+    public float CurrentVelocity => _currentVelocity;
+    public float CurrentAcceleration => _currentAcceleration;
+    public bool CanBoost => _canBoost;
 
-    public float turningSpeed
-    {
-        get => turnSpeedCurve.Evaluate(_velocity / stats.maxVelocity);
-    }
+    //******************************************************************************************************************
+    //Variables - Fields
+    
+    private float turningSpeed = 1;
+    private float maxAngularVelocity;
+    [Range(0f,0.05f)]
+    public float driftThreshold = 0.025f;
+
+
+    //******************************************************************************************************************
 
     //State stuff
-    public int isBoosting = 0;
+    public bool isBoosting = false;
     public bool isDrifting = false;
+    public bool isThrottling = false;
+    private float _throttlePercent;
+    private float _currentVelocity;
+    private float _currentAcceleration;
+    private Vector2 _modifiedSteerValue;
+    private Vector2 _rawSteerValue;
+    private Vector2 _rollValue;
 
-    public Rigidbody rb;
-    private int boostAmount;
+    //******************************************************************************************************************
+
+    //Timers/Cooldown Flags
+
+    private bool _canBoost = true;
 
 
+
+    //******************************************************************************************************************
+
+    //Callbacks
+    
+    //******************************************************************************************************************
+
+    //Enums
+
+    private enum DriftDirection { RIGHT,LEFT,STRAIGHT }
+
+    private DriftDirection _mySteerDirection = DriftDirection.STRAIGHT;
+    
+    //******************************************************************************************************************
+    
+
+
+   
+
+    //******************************************************************************************************************
+
+    //Functions
+    
+    #region UnityCallbacks
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        maxAngularVelocity = stats.maxAngularVelocity;
 
-        _rollSpeed = stats.rollSpeed;
-        _yawSpeed = stats.yawSpeed;
-        _pitchSpeed = stats.pitchSpeed;
     }
 
     void FixedUpdate()
     {
-        _acceleration = (stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)) +
-                        (stats.boostModifier * stats.boostCurve.Evaluate(VelocityPercent) * isBoosting);
-        _velocity = rb.velocity.magnitude;
-    }
-    
-    public void Accelerate(float trigPercent)
-    {
-
-        // Set acceleration to a percentage of the max based on the acceleration curve
-        if (!isDrifting)
-            rb.AddForce(trigPercent * _acceleration * transform.forward, ForceMode.VelocityChange);
-
-    }
-
-    public void Steer(Vector2 percent)
-    {
+        SetAcceleration();
+        
+        _currentVelocity = rb.velocity.magnitude;
+        
+        rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward, ForceMode.VelocityChange);
         if (!isDrifting)
         {
-            turnOffset = 1;
-            rb.AddRelativeTorque(_pitchSpeed * percent.y * turningSpeed,
-                _yawSpeed * percent.x * turnOffset * turningSpeed, 0f);
+            
+            rb.velocity = transform.forward * rb.velocity.magnitude;
         }
-        else
-        {
-            turnOffset = 1.5f;
-            rb.AddRelativeTorque(_pitchSpeed * percent.y * turningSpeed,
-                _yawSpeed * percent.x * turnOffset * turningSpeed, 0f);
-        }
-    }
 
-    public void Roll(Vector2 percent)
-    {
-        rb.AddRelativeTorque(0f, 0f, -percent.x * _rollSpeed);
+        rb.maxAngularVelocity = Mathf.Lerp(maxAngularVelocity, maxAngularVelocity / 2, VelocityPercent);
+        
+        if(isThrottling) 
+            rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed);
+        
+        
     }
-
-    public void Boost()
-    {
-        if (boostCapacity > 0 && isBoosting == 0)
-        {
-            boostAmount = 20;
-        }
-        else
-        {
-            boostAmount = 0;
-        }
-    }
+    #endregion
     
-    public void Stop(float lerpVal)
+    #region InputCallbacks
+    public void OnThrottle(InputAction.CallbackContext value)
     {
-        if (lerpVal >= 0.1)
+        _throttlePercent = value.ReadValue<float>();
+        if (_throttlePercent >= 0.05f)
+            isThrottling = true;
+        else
         {
-            isDrifting = true;
-            if (VelocityPercent >= 0.5f)
+            isThrottling = false;
+        }
+    }
+
+    public void OnSteer(InputAction.CallbackContext value)
+    {
+        _rawSteerValue = value.ReadValue<Vector2>();
+        if(!isDrifting)
+        {
+            _modifiedSteerValue = _rawSteerValue;
+            turningSpeed = 1 * turnSpeedCurve.Evaluate(VelocityPercent);
+        }
+        if (isDrifting)
+        {
+            switch (_mySteerDirection)
             {
-                Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
-                rb.AddForce(lerpVal * _acceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
+                case DriftDirection.RIGHT:
+                    if (_rawSteerValue.x >= 0f)
+                        _modifiedSteerValue = _rawSteerValue;
+                    else
+                    {
+                        _modifiedSteerValue = new Vector2(0, _rawSteerValue.y);
+                    }
+                    break;
+                case DriftDirection.LEFT:
+                    if (_rawSteerValue.x <= 0f)
+                        _modifiedSteerValue = _rawSteerValue;
+                    else
+                    {
+                        _modifiedSteerValue = new Vector2(0, _rawSteerValue.y);
+                    }
+                    break;
+                case DriftDirection.STRAIGHT:
+                    _modifiedSteerValue = _rawSteerValue;
+                    break;
+                default:
+                    break;
             }
-
+            turningSpeed = 1.7f * turnSpeedCurve.Evaluate(VelocityPercent);
+            
+            
         }
-        else
-        {
-            isDrifting = false;
-        }
+  
     }
 
+    public void OnRoll(InputAction.CallbackContext value)
+    {
+        _rollValue = value.ReadValue<Vector2>();
+    }
+    public void OnBoost(InputAction.CallbackContext value)
+    {
+        
+        if (value.performed && _canBoost )
+        {
+            Boost(2f);
+        }
+        
+    }
+    
+    public void OnStop(InputAction.CallbackContext value)
+    {
+        var stickValue = _rawSteerValue.x;
+        
+        if (value.performed)
+        {
+            SetSteerDirection(stickValue);
+            if(CanDrift()) StartDrift();
+        }
+        if (value.canceled && isDrifting)
+        {
+            EndDrift();
+            if(value.duration >= 1.2f) Boost(1);
+        }
+    }
+    
+    #endregion
+
+    public void SetSteerDirection(float stickValue)
+    {
+        if (stickValue >= -1 * driftThreshold && stickValue <= driftThreshold)
+        {
+            _mySteerDirection = DriftDirection.STRAIGHT;
+        }
+        else if(stickValue > driftThreshold)
+        {
+            _mySteerDirection = DriftDirection.RIGHT;
+        }
+        else if(stickValue < -1 * driftThreshold)
+        {
+            _mySteerDirection = DriftDirection.LEFT;
+        }
+        Debug.Log("Steer Direction: " + _mySteerDirection.ToString());
+    }
+
+    public bool CanDrift()
+    {
+       if(VelocityPercent <= 0.5f)
+        return false;
+       else if(_mySteerDirection == DriftDirection.STRAIGHT)
+           return false;
+
+       return true;
+    }
+
+
+    public void Boost(float time)
+    {
+        isBoosting = true;
+        StartCoroutine(BoostCooldown(time));
+    }
+    
+    // decouple camera control
+    public CinemachineVirtualCamera _camera; 
+    public void StartDrift()
+    {
+        isDrifting = true; 
+        _camera.Priority = 12;
+        Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
+        rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
+    }
+
+    public void EndDrift()
+    {
+        _camera.Priority = 1;
+        isDrifting = false;
+    }
+    
+    // Set acceleration to a percentage of the max based on the acceleration curve
+    void SetAcceleration()
+    {
+        //var angularVelocityN = Mathf.Abs(rb.angularVelocity.y);
+        var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));//+ angularVelocityN);
+        
+        var boostModifier = (stats.boostModifier * stats.boostCurve.Evaluate(VelocityPercent) );
+        _currentAcceleration = isBoosting ?  evaluatedAcceleration + boostModifier : evaluatedAcceleration;
+    }
+
+    //******************************************************************************************************************
+    
+    // Coroutines
+
+    IEnumerator BoostCooldown(float time)
+    {
+        _canBoost = false;
+        yield return new WaitForSeconds(time);
+        isBoosting = false;
+        _canBoost = true;
+    }
+ 
+    //******************************************************************************************************************
 }

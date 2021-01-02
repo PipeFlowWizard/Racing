@@ -27,8 +27,8 @@ public class ShipUIController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        _velocityProgressor.InstantSetValue(_shipMovement.Velocity);
-        _accelerationProgressor.InstantSetValue(_shipMovement.Acceleration);
+        _velocityProgressor.InstantSetValue(_shipMovement.CurrentVelocity);
+        _accelerationProgressor.InstantSetValue(_shipMovement.CurrentAcceleration);
         foreach (var progressor in _movementProgressors.Progressors)
         {
             progressor.UpdateProgress();

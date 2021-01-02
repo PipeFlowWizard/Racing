@@ -6,18 +6,29 @@ using UnityEngine;
 public class LapTimeGetter : MonoBehaviour
 {
     [SerializeField]
-    private ShipLap shipLap;
+    private LapCounter lapCounter;
+    [SerializeField]
+    private TextMeshProUGUI _currentLapString;
+    [SerializeField]
+    private TextMeshProUGUI _lapTime;
 
-    private TextMeshProUGUI _text;
+    private RaceHandler raceManager;
+    
     void Start()
     {
-        shipLap = FindObjectOfType<ShipLap>();
-        _text = GetComponent<TextMeshProUGUI>();
+        lapCounter = FindObjectOfType<LapCounter>();
+        raceManager = FindObjectOfType<RaceHandler>();
+        UpdateCurrentLap();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        _text.text = shipLap.currentLapTime.TotalLapTime;
+        _lapTime.text = lapCounter.currentLapTime.TotalLapTime;
+    }
+
+    public void UpdateCurrentLap()
+    {
+        _currentLapString.text = "Lap: " + lapCounter.currentLap + "/" + raceManager.totalLaps;
     }
 }

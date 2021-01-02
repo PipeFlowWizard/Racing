@@ -7,13 +7,15 @@ using UnityEngine;
 public class ShipSoundManager : MonoBehaviour
 {
     private ShipMovement _shipMovement;
-    private int _isBoosting = 0;
+    private bool _isBoosting = false;
     
     public AnimationCurve pitchCurve;
     public AudioSource engineSource;
     public AudioSource boostSource;
     public AudioSource brakeSource;
 
+    [SerializeField] private ShipSounds _shipSounds;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -33,34 +35,23 @@ public class ShipSoundManager : MonoBehaviour
         _isBoosting = _shipMovement.isBoosting;
         Throttle();
         Brake();
-        Boost();
+        SetBoostLoopVolume();
     }
     
     
     
     
-    private bool _wasBoosting = false;
-    
-    public void Boost()
+    public void SetBoostLoopVolume()
     {
-        boostSource.volume = Mathf.Lerp(0, .8f, _isBoosting);
-        
-        if (_isBoosting > 0.1f)
-        {
-            
+        boostSource.volume = _isBoosting ? 0.8f : 0;
+    }
 
-            if (_wasBoosting == false)
-            {
-                boostSource.enabled = true;
-                //boostSource.Play();
-                _wasBoosting = true;
-            }
-
-        }
-        else
+    public void OnBoost()
+    {
+        if(_shipMovement.CanBoost)
         {
-            boostSource.enabled = false;
-            _wasBoosting = false;
+            boostSource.PlayOneShot(_shipSounds.boostOneShot);
+            Debug.Log("played");
         }
     }
 
@@ -73,7 +64,7 @@ public class ShipSoundManager : MonoBehaviour
     public void Brake()
     {
         if (_shipMovement.isDrifting)
-            brakeSource.volume = .7f;
+            brakeSource.volume = .4f;
         else
             brakeSource.volume = 0;
     }
