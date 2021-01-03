@@ -35,8 +35,10 @@ public class ThrusterController : MonoBehaviour
     public void SetThrusterStrength()
     {
         _mainThruster.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+        
         _leftThrusterBottom.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
         _leftThrusterTop.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+        
         _rightThrusterBottom.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
         _rightThrusteTop.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
         
@@ -50,7 +52,6 @@ public class ThrusterController : MonoBehaviour
         _leftThrusterTop.Power = _shipMovement.VelocityPercent;
         _rightThrusterBottom.Power = _shipMovement.VelocityPercent;
         _rightThrusteTop.Power = _shipMovement.VelocityPercent;
-        Debug.Log(_shipMovement.VelocityPercent);
     }
     
     public float Remap(float iMin, float iMax, float oMin, float oMax, float v)

@@ -122,7 +122,7 @@ public class ShipMovement : MonoBehaviour
         if(!isDrifting)
         {
             _modifiedSteerValue = _rawSteerValue;
-            turningSpeed = 1 * turnSpeedCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.2f * turnSpeedCurve.Evaluate(VelocityPercent);
         }
         if (isDrifting)
         {
@@ -150,7 +150,7 @@ public class ShipMovement : MonoBehaviour
                 default:
                     break;
             }
-            turningSpeed = 1.7f * turnSpeedCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.5f * turnSpeedCurve.Evaluate(VelocityPercent);
             
             
         }
@@ -164,7 +164,7 @@ public class ShipMovement : MonoBehaviour
     public void OnBoost(InputAction.CallbackContext value)
     {
         
-        if (value.performed && _canBoost )
+        if (value.performed)
         {
             Boost(2f);
         }
@@ -173,17 +173,21 @@ public class ShipMovement : MonoBehaviour
     
     public void OnStop(InputAction.CallbackContext value)
     {
+        Debug.Log("Stop called");
         var stickValue = _rawSteerValue.x;
         
-        if (value.performed)
+        if (value.performed && value.duration <=0.1f)
         {
+            Debug.Log("Stop performed");
+            Debug.Log("steer direction: " + _mySteerDirection);
             SetSteerDirection(stickValue);
             if(CanDrift()) StartDrift();
         }
         if (value.canceled && isDrifting)
         {
+            Debug.Log("Stop cancelled");
             EndDrift();
-            if(value.duration >= 1.2f) Boost(1);
+            if(value.duration >= 1.2f && _canBoost) Boost(1);
         }
     }
     
@@ -195,15 +199,14 @@ public class ShipMovement : MonoBehaviour
         {
             _mySteerDirection = DriftDirection.STRAIGHT;
         }
-        else if(stickValue > driftThreshold)
+        else if (stickValue > driftThreshold)
         {
             _mySteerDirection = DriftDirection.RIGHT;
         }
-        else if(stickValue < -1 * driftThreshold)
+        else if (stickValue < -1 * driftThreshold)
         {
             _mySteerDirection = DriftDirection.LEFT;
         }
-        Debug.Log("Steer Direction: " + _mySteerDirection.ToString());
     }
 
     public bool CanDrift()
@@ -219,8 +222,10 @@ public class ShipMovement : MonoBehaviour
 
     public void Boost(float time)
     {
-        isBoosting = true;
-        StartCoroutine(BoostCooldown(time));
+        if(_canBoost)
+        {
+            StartCoroutine(BoostCooldown(time));
+        }
     }
     
     // decouple camera control
@@ -228,7 +233,7 @@ public class ShipMovement : MonoBehaviour
     public void StartDrift()
     {
         isDrifting = true; 
-        _camera.Priority = 12;
+        _camera.Priority = 3;
         Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
         rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
     }
@@ -242,10 +247,9 @@ public class ShipMovement : MonoBehaviour
     // Set acceleration to a percentage of the max based on the acceleration curve
     void SetAcceleration()
     {
-        //var angularVelocityN = Mathf.Abs(rb.angularVelocity.y);
-        var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));//+ angularVelocityN);
-        
+        var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));
         var boostModifier = (stats.boostModifier * stats.boostCurve.Evaluate(VelocityPercent) );
+        
         _currentAcceleration = isBoosting ?  evaluatedAcceleration + boostModifier : evaluatedAcceleration;
     }
 
@@ -256,6 +260,7 @@ public class ShipMovement : MonoBehaviour
     IEnumerator BoostCooldown(float time)
     {
         _canBoost = false;
+        isBoosting = true;
         yield return new WaitForSeconds(time);
         isBoosting = false;
         _canBoost = true;

@@ -51,7 +51,6 @@ public class ShipSoundManager : MonoBehaviour
         if(_shipMovement.CanBoost)
         {
             boostSource.PlayOneShot(_shipSounds.boostOneShot);
-            Debug.Log("played");
         }
     }
 

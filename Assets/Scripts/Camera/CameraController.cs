@@ -9,59 +9,41 @@ public class CameraController : MonoBehaviour
 {
     public float maxFov = 90f;
     public float minFov = 60f;
-    [SerializeField]
-    private CinemachineVirtualCamera virtualCamera1, virtualCamera2;
-    
 
+    [SerializeField] private CinemachineVirtualCamera virtualCamera1, virtualCamera2;
     [SerializeField] private ParticleSystem speedLines;
-
     [SerializeField] private ShipMovement shipMovement;
 
-    private Vector3 transformLocalPosition;
+    public AnimationCurve cameraFOVCurve;
+
+    private CinemachineTransposer transposer;
+    private Vector3 speedLinesTransformLocalPosition;
     private bool _boosting = false;
 
     private void Start()
     {
-        transformLocalPosition = speedLines.transform.localPosition;
+        speedLinesTransformLocalPosition = speedLines.transform.localPosition;
+        transposer = virtualCamera1.GetCinemachineComponent<CinemachineTransposer>();
     }
 
-    public void OnBoost(InputAction.CallbackContext value)
+    private void Update()
     {
-        if (value.started && shipMovement.CanBoost && !_boosting)
-        {
-            _boosting = true;
-            StartCoroutine(BoostFOV());
-        }
-
+        SetCameraFOV();
+        SetCameraZOffset();
     }
 
-    IEnumerator BoostFOV()
+    public void SetCameraFOV()
     {
-        CinemachineTransposer transposer = virtualCamera1.GetCinemachineComponent<CinemachineTransposer>();
-        float percent = 0;
-        
-        
-        while (percent < 1)
-        {
-            percent += Time.deltaTime *4;
-            virtualCamera1.m_Lens.FieldOfView = Mathf.Lerp(minFov,maxFov,percent);
-            virtualCamera2.m_Lens.FieldOfView = Mathf.Lerp(minFov,maxFov,percent);
-            transformLocalPosition.z = Mathf.Lerp(25f, 5f, percent);
-            transposer.m_FollowOffset.z = Mathf.Lerp(-10, -5, percent);
-            yield return null;
-        }
-        yield return new WaitForSeconds(1.5f);
-        percent = 0;
-        while (percent < 1)
-        {
-            percent += Time.deltaTime *2;
-            virtualCamera1.m_Lens.FieldOfView = Mathf.Lerp(maxFov,minFov,percent);
-            virtualCamera2.m_Lens.FieldOfView = Mathf.Lerp(maxFov,minFov,percent);
-            transformLocalPosition.z = Mathf.Lerp(5f, 25f, percent);
-            transposer.m_FollowOffset.z = Mathf.Lerp(-5, -10, percent);
-            yield return null;
-        }
-
-        _boosting = false;
+        var percent = cameraFOVCurve.Evaluate(shipMovement.VelocityPercent);
+        virtualCamera1.m_Lens.FieldOfView = Mathf.Lerp(minFov, maxFov, percent);
+        virtualCamera2.m_Lens.FieldOfView = Mathf.Lerp(minFov, maxFov, percent);
     }
+
+    public void SetCameraZOffset()
+    {
+        var percent = cameraFOVCurve.Evaluate(shipMovement.VelocityPercent);
+        speedLinesTransformLocalPosition.z = Mathf.Lerp(25f, 5f, percent);
+        transposer.m_FollowOffset.z = Mathf.Lerp(-10, -5, percent);
+    }
+
 }
