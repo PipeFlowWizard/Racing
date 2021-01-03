@@ -92,7 +92,8 @@ public class ShipMovement : MonoBehaviour
         if (!isDrifting)
         {
             
-            rb.velocity = transform.forward * rb.velocity.magnitude;
+           rb.velocity = (rb.velocity + (5 * transform.forward)).normalized * rb.velocity.magnitude;
+            // rb.velocity = transform.forward * rb.velocity.magnitude;
         }
 
         rb.maxAngularVelocity = Mathf.Lerp(maxAngularVelocity, maxAngularVelocity / 2, VelocityPercent);
@@ -122,7 +123,7 @@ public class ShipMovement : MonoBehaviour
         if(!isDrifting)
         {
             _modifiedSteerValue = _rawSteerValue;
-            turningSpeed = 1.2f * turnSpeedCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.0f * turnSpeedCurve.Evaluate(VelocityPercent);
         }
         if (isDrifting)
         {
@@ -259,6 +260,9 @@ public class ShipMovement : MonoBehaviour
 
     IEnumerator BoostCooldown(float time)
     {
+        //test
+        rb.velocity = transform.forward * rb.velocity.magnitude;
+        
         _canBoost = false;
         isBoosting = true;
         yield return new WaitForSeconds(time);
