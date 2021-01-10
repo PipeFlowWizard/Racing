@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(ShipMovement))]
 public class ShipSoundManager : MonoBehaviour
@@ -32,7 +33,7 @@ public class ShipSoundManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _isBoosting = _shipMovement.isBoosting;
+        _isBoosting = _shipMovement.IsBoosting;
         Throttle();
         Brake();
         SetBoostLoopVolume();
@@ -46,9 +47,9 @@ public class ShipSoundManager : MonoBehaviour
         boostSource.volume = _isBoosting ? 0.8f : 0;
     }
 
-    public void OnBoost()
+    public void OnStop(InputAction.CallbackContext value)
     {
-        if(_shipMovement.CanBoost)
+        if(value.canceled && value.duration >= 2.0f )
         {
             boostSource.PlayOneShot(_shipSounds.boostOneShot);
         }
@@ -63,7 +64,7 @@ public class ShipSoundManager : MonoBehaviour
     public void Brake()
     {
         if (_shipMovement.isDrifting)
-            brakeSource.volume = .4f;
+            brakeSource.volume = .8f;
         else
             brakeSource.volume = 0;
     }

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   engineLoop: {fileID: 0}
   boostLoop: {fileID: 0}
-  boostOneShot: {fileID: 8300000, guid: 97943fdff9d9fb647a099592ecb10976, type: 3}
+  boostOneShot: {fileID: 8300000, guid: 00a896d3b296b8b42a05cb0a7fa05e4b, type: 3}
   brakeLoop: {fileID: 0}

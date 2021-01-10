@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: FirstShip
   m_EditorClassIdentifier: 
   engineClip: {fileID: 8300000, guid: bfc4501b50df7c94498fc8078a747360, type: 3}
-  boostClip: {fileID: 8300000, guid: 5a1f99283070f4c40a691d0363ece1d3, type: 3}
-  brakeClip: {fileID: 8300000, guid: 2152808ec9d591f439b44d4c4a551873, type: 3}
+  boostClip: {fileID: 8300000, guid: 00a896d3b296b8b42a05cb0a7fa05e4b, type: 3}
+  brakeClip: {fileID: 8300000, guid: ec2a31322677caf4e89fd54e0bca622a, type: 3}
   maxVelocity: 150
   maxAngularVelocity: 4
   maxAcceleration: 7
@@ -34,8 +34,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.11879803
     - serializedVersion: 3
-      time: 0.1
-      value: 0.3
+      time: 0.14962158
+      value: 0.20252687
       inSlope: 0.08105781
       outSlope: 0.08105781
       tangentMode: 0
@@ -43,31 +43,22 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.15816443
     - serializedVersion: 3
-      time: 0.4
-      value: 0.2
-      inSlope: 1.2045449
-      outSlope: 1.2045449
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.13836482
-      outWeight: 0.12252501
-    - serializedVersion: 3
-      time: 0.7
-      value: 0.1
-      inSlope: -0.112845734
-      outSlope: -0.112845734
+      time: 0.7545813
+      value: 0.193591
+      inSlope: 0.036514647
+      outSlope: 0.036514647
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.14292438
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -1.7162519
+      outSlope: -1.7162519
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.088270314
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -105,6 +96,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  yawSpeed: 250
-  rollSpeed: 100
-  pitchSpeed: 200
+  yawSpeed: 450
+  rollSpeed: 550
+  pitchSpeed: 450

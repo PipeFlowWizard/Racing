@@ -31,7 +31,7 @@ public class Thruster : MonoBehaviour
         set
         {
             if (value >= 0 && value <= 1)
-                _strength = value;
+                _strength += (value - _strength) * 8 * Time.deltaTime;
         }
     }
 

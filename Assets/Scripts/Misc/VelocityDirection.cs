@@ -8,6 +8,7 @@ public class VelocityDirection : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.rotation = Quaternion.LookRotation(rb.velocity.normalized);
+        if(rb.velocity != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(rb.velocity.normalized);
     }
 }

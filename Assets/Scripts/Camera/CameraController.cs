@@ -18,7 +18,6 @@ public class CameraController : MonoBehaviour
 
     private CinemachineTransposer transposer;
     private Vector3 speedLinesTransformLocalPosition;
-    private bool _boosting = false;
 
     private void Start()
     {
@@ -43,7 +42,7 @@ public class CameraController : MonoBehaviour
     {
         var percent = cameraFOVCurve.Evaluate(shipMovement.VelocityPercent);
         speedLinesTransformLocalPosition.z = Mathf.Lerp(25f, 5f, percent);
-        transposer.m_FollowOffset.z = Mathf.Lerp(-10, -5, percent);
+        transposer.m_FollowOffset.z = Mathf.Lerp(-8, -5, percent);
     }
 
 }

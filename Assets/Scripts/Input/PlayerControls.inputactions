@@ -9,7 +9,7 @@
                     "name": "Throttle",
                     "type": "PassThrough",
                     "id": "2b7ca9f7-41e7-4e3e-84f7-d5edc45f6ae0",
-                    "expectedControlType": "Analog",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": ""
                 },
@@ -82,8 +82,8 @@
                 },
                 {
                     "name": "",
-                    "id": "c1c6893a-e378-4da0-813d-564696945b1f",
-                    "path": "<Gamepad>/leftTrigger",
+                    "id": "940df17a-06af-4122-a70d-3292d2341e53",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "Press(behavior=2)",
                     "processors": "",
                     "groups": "",

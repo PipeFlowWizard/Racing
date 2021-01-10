@@ -11,6 +11,7 @@ public class ThrusterController : MonoBehaviour
     private float _rawSteerValue;
     private float _rawThrottleValue;
     public float boostScaler = 2;
+    public AnimationCurve thrusterOutputCurve;
     private void Start()
     {
         _shipMovement = GetComponentInParent<ShipMovement>();
@@ -34,17 +35,33 @@ public class ThrusterController : MonoBehaviour
     
     public void SetThrusterStrength()
     {
-        _mainThruster.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
-        
-        _leftThrusterBottom.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
-        _leftThrusterTop.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
-        
-        _rightThrusterBottom.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
-        _rightThrusteTop.Strength = _shipMovement.isBoosting ? _rawThrottleValue: _rawThrottleValue/2;
-        
-        
-    }
 
+        _mainThruster.Strength = _shipMovement.IsBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+
+        
+        if (_rawSteerValue > 0)
+        {
+            _leftThrusterBottom.Strength = _rawSteerValue * (_shipMovement.IsBoosting ? _rawThrottleValue : _rawThrottleValue / 1.2f);
+            _leftThrusterTop.Strength = _rawSteerValue * (_shipMovement.IsBoosting ? _rawThrottleValue : _rawThrottleValue / 1.2f);  
+        }
+        else
+        {
+            _leftThrusterBottom.Strength = _shipMovement.IsBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+            _leftThrusterTop.Strength = _shipMovement.IsBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+        }
+        if (_rawSteerValue < 0)
+        {
+            _rightThrusterBottom.Strength = Mathf.Abs(_rawSteerValue * (_shipMovement.IsBoosting ? _rawThrottleValue : _rawThrottleValue / 1.2f));
+            _rightThrusteTop.Strength = Mathf.Abs(_rawSteerValue * (_shipMovement.IsBoosting ? _rawThrottleValue : _rawThrottleValue / 1.2f));  
+        }
+        else
+        {
+            _rightThrusterBottom.Strength = _shipMovement.IsBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+            _rightThrusteTop.Strength = _shipMovement.IsBoosting ? _rawThrottleValue: _rawThrottleValue/2;
+        }
+    }
+    
+    
     public void SetThrusterPower()
     {
         _mainThruster.Power = _shipMovement.VelocityPercent;

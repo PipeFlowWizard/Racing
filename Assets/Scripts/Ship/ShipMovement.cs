@@ -1,9 +1,12 @@
-﻿using Doozy.Engine.Progress;
+﻿using System;
+using Doozy.Engine.Progress;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Shapes;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class ShipMovement : MonoBehaviour
 {
@@ -11,8 +14,9 @@ public class ShipMovement : MonoBehaviour
     
     //Dependencies
     public ShipStats stats;
-    public Rigidbody rb;
-    public AnimationCurve turnSpeedCurve;
+    private Rigidbody _rb;
+    public AnimationCurve turnSpeedVSVelocityCurve;
+    private CinemachineImpulseSource _impulseSource;
 
     //******************************************************************************************************************
 
@@ -21,6 +25,31 @@ public class ShipMovement : MonoBehaviour
     public float CurrentVelocity => _currentVelocity;
     public float CurrentAcceleration => _currentAcceleration;
     public bool CanBoost => _canBoost;
+    public float BoostModifier
+    {
+        get => _boostModifier;
+        set => _boostModifier = (stats.boostModifier * stats.boostCurve.Evaluate(value));
+    }
+    public bool IsBoosting
+    {
+        get => _isBoosting;
+        set => _isBoosting = _boostHeld || value;
+    }
+
+    public float CurrentBoost
+    {
+        get => _currentBoost;
+        set
+        {
+            if (value <= 0)
+                _currentBoost = 0f;
+            if (value >= _maxBoost)
+                _currentBoost = _maxBoost;
+            else
+                _currentBoost = value;
+
+        }
+    }
 
     //******************************************************************************************************************
     //Variables - Fields
@@ -29,14 +58,17 @@ public class ShipMovement : MonoBehaviour
     private float maxAngularVelocity;
     [Range(0f,0.05f)]
     public float driftThreshold = 0.025f;
+    private float _boostModifier;
+    private float _maxBoost;
+    private float _currentBoost;
 
 
     //******************************************************************************************************************
 
     //State stuff
-    public bool isBoosting = false;
-    public bool isDrifting = false;
-    public bool isThrottling = false;
+    [HideInInspector] public bool _isBoosting = false;
+    [HideInInspector] public bool isDrifting = false;
+    [HideInInspector] public bool isThrottling = false;
     private float _throttlePercent;
     private float _currentVelocity;
     private float _currentAcceleration;
@@ -49,6 +81,7 @@ public class ShipMovement : MonoBehaviour
     //Timers/Cooldown Flags
 
     private bool _canBoost = true;
+    private bool _boostHeld = false;
 
 
 
@@ -77,32 +110,62 @@ public class ShipMovement : MonoBehaviour
     #region UnityCallbacks
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
+        _impulseSource = GetComponent<CinemachineImpulseSource>();
         maxAngularVelocity = stats.maxAngularVelocity;
+        _rb.inertiaTensor = new Vector3(150,150,150);
 
+    }
+
+    private void OnEnable()
+    {
+        Draw.LineGeometry = LineGeometry.Volumetric3D;
+        Draw.LineThicknessSpace = ThicknessSpace.Pixels;
+        Draw.LineThickness = 4;
+        RenderPipelineManager.endCameraRendering += drawline;
+    }
+
+
+
+    public void drawline(ScriptableRenderContext ctx,Camera cam)
+    {
+        RaycastHit hit;
+        if(isDrifting)
+        {
+            if (Physics.Raycast(transform.position, transform.forward, out hit, 200))
+                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.red);
+            else
+                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.green);
+        }
     }
 
     void FixedUpdate()
     {
         SetAcceleration();
         
-        _currentVelocity = rb.velocity.magnitude;
+        _currentVelocity = _rb.velocity.magnitude;
         
-        rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward, ForceMode.VelocityChange);
+        _rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward, ForceMode.VelocityChange);
         if (!isDrifting)
         {
             
-           rb.velocity = (rb.velocity + (5 * transform.forward)).normalized * rb.velocity.magnitude;
+           _rb.velocity = (_rb.velocity + (5 * transform.forward)).normalized * _rb.velocity.magnitude;
             // rb.velocity = transform.forward * rb.velocity.magnitude;
         }
 
-        rb.maxAngularVelocity = Mathf.Lerp(maxAngularVelocity, maxAngularVelocity / 2, VelocityPercent);
+        _rb.maxAngularVelocity = Mathf.Lerp(maxAngularVelocity, maxAngularVelocity / 2, VelocityPercent);
         
-        if(isThrottling) 
-            rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed);
+        if(VelocityPercent >= 0.1f) 
+            _rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed);
+        
         
         
     }
+
+    private void Update()
+    {
+    }
+
     #endregion
     
     #region InputCallbacks
@@ -123,10 +186,11 @@ public class ShipMovement : MonoBehaviour
         if(!isDrifting)
         {
             _modifiedSteerValue = _rawSteerValue;
-            turningSpeed = 1.0f * turnSpeedCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.2f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
         }
         if (isDrifting)
         {
+            Debug.Log(_rb.angularVelocity.magnitude);
             switch (_mySteerDirection)
             {
                 case DriftDirection.RIGHT:
@@ -151,7 +215,7 @@ public class ShipMovement : MonoBehaviour
                 default:
                     break;
             }
-            turningSpeed = 1.5f * turnSpeedCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.7f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
             
             
         }
@@ -164,10 +228,20 @@ public class ShipMovement : MonoBehaviour
     }
     public void OnBoost(InputAction.CallbackContext value)
     {
-        
-        if (value.performed)
+
+        if (value.performed && _canBoost && !_isBoosting)
         {
-            Boost(2f);
+            _impulseSource.GenerateImpulse();
+            _boostHeld = true;
+            IsBoosting = true;
+            BoostModifier = 0f;
+        }
+
+        if (value.canceled && _isBoosting)
+        {
+            _boostHeld = false;
+            IsBoosting = false;
+            BoostModifier = 1;
         }
         
     }
@@ -179,16 +253,13 @@ public class ShipMovement : MonoBehaviour
         
         if (value.performed && value.duration <=0.1f)
         {
-            Debug.Log("Stop performed");
-            Debug.Log("steer direction: " + _mySteerDirection);
             SetSteerDirection(stickValue);
             if(CanDrift()) StartDrift();
         }
         if (value.canceled && isDrifting)
         {
-            Debug.Log("Stop cancelled");
-            EndDrift();
-            if(value.duration >= 1.2f && _canBoost) Boost(1);
+            EndDrift(value.duration);
+            if(value.duration >= 1.5f && CanBoost) Launch(1.0f);
         }
     }
     
@@ -220,13 +291,9 @@ public class ShipMovement : MonoBehaviour
        return true;
     }
 
-
-    public void Boost(float time)
+    public void Launch(float time)
     {
-        if(_canBoost)
-        {
-            StartCoroutine(BoostCooldown(time));
-        }
+        StartCoroutine(LaunchCoroutine(time));
     }
     
     // decouple camera control
@@ -235,39 +302,62 @@ public class ShipMovement : MonoBehaviour
     {
         isDrifting = true; 
         _camera.Priority = 3;
-        Vector3 driftDirection = Vector3.Lerp(transform.forward, rb.velocity.normalized, 0.5f);
-        rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
+        Vector3 driftDirection = Vector3.Lerp(transform.forward, _rb.velocity.normalized, 0.5f);
+        _rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
+        
+        
+        
     }
 
-    public void EndDrift()
+
+    public void EndDrift(double duration)
     {
         _camera.Priority = 1;
         isDrifting = false;
+        if (duration >= .5f)
+        {
+            
+            //test
+            //rb.velocity = transform.forward * rb.velocity.magnitude;
+            Debug.Log("aligned");
+           
+        }
+        
     }
-    
+
     // Set acceleration to a percentage of the max based on the acceleration curve
+
+
     void SetAcceleration()
     {
         var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));
-        var boostModifier = (stats.boostModifier * stats.boostCurve.Evaluate(VelocityPercent) );
-        
-        _currentAcceleration = isBoosting ?  evaluatedAcceleration + boostModifier : evaluatedAcceleration;
+
+        _currentAcceleration = evaluatedAcceleration + BoostModifier;
     }
 
     //******************************************************************************************************************
     
     // Coroutines
 
-    IEnumerator BoostCooldown(float time)
+    IEnumerator LaunchCoroutine(float time)
     {
-        //test
-        rb.velocity = transform.forward * rb.velocity.magnitude;
-        
-        _canBoost = false;
-        isBoosting = true;
-        yield return new WaitForSeconds(time);
-        isBoosting = false;
-        _canBoost = true;
+        if(_canBoost)
+        {
+            _impulseSource.GenerateImpulse();
+            
+            _canBoost = false;
+            IsBoosting = true;
+            BoostModifier = 0f;
+            yield return new WaitForSeconds(time);
+            
+            if(!_boostHeld)
+            {
+                BoostModifier = 1f;
+                IsBoosting = false;
+                
+            }
+            _canBoost = true;
+        }
     }
  
     //******************************************************************************************************************
