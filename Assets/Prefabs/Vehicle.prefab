@@ -33899,7 +33899,7 @@ GameObject:
   - component: {fileID: 9029730291296566620}
   - component: {fileID: 4319036128757792476}
   - component: {fileID: 6325789442059442063}
-  - component: {fileID: 3991555167491553030}
+  - component: {fileID: 6561235110949854481}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Player
@@ -34213,7 +34213,7 @@ MonoBehaviour:
     m_DissipationMode: 2
     m_DissipationDistance: 1000
     m_PropagationSpeed: 343
---- !u!114 &3991555167491553030
+--- !u!114 &6561235110949854481
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -34222,9 +34222,46 @@ MonoBehaviour:
   m_GameObject: {fileID: 9029730291296566631}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adfae0c8cca99574bbb93b09a56f9d69, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d02f204e61f81e42bb218cb60586b36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pitchCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.4
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.6
+      value: 0.85
+      inSlope: 0.5089165
+      outSlope: 0.5089165
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.053109724
+      outWeight: 0.10202647
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1.4447587
+      outSlope: 1.4447587
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.05590499
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  engineSource: {fileID: 3947353034756049748}
+  boostSource: {fileID: 5430612743593077236}
+  brakeSource: {fileID: 7376894513414248124}
+  _shipSounds: {fileID: 11400000, guid: 5efd72d18d1ee4f42afad06c60f4282a, type: 2}
 --- !u!1 &9029730291566671585
 GameObject:
   m_ObjectHideFlags: 0
