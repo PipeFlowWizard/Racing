@@ -24,7 +24,7 @@ public class ShipMovement : MonoBehaviour
     public float VelocityPercent => _currentVelocity / stats.maxVelocity;
     public float CurrentVelocity => _currentVelocity;
     public float CurrentAcceleration => _currentAcceleration;
-    public bool CanBoost => _canBoost;
+    public bool CanBoost => _canBoost && _currentBoost > 0;
     public float BoostModifier
     {
         get => _boostModifier;
@@ -43,8 +43,8 @@ public class ShipMovement : MonoBehaviour
         {
             if (value <= 0)
                 _currentBoost = 0f;
-            if (value >= _maxBoost)
-                _currentBoost = _maxBoost;
+            if (value >= maxBoost)
+                _currentBoost = maxBoost;
             else
                 _currentBoost = value;
 
@@ -59,7 +59,7 @@ public class ShipMovement : MonoBehaviour
     [Range(0f,0.05f)]
     public float driftThreshold = 0.025f;
     private float _boostModifier;
-    private float _maxBoost;
+    public float maxBoost;
     private float _currentBoost;
 
 
@@ -69,6 +69,7 @@ public class ShipMovement : MonoBehaviour
     [HideInInspector] public bool _isBoosting = false;
     [HideInInspector] public bool isDrifting = false;
     [HideInInspector] public bool isThrottling = false;
+    [HideInInspector] public bool isLaunching = false;
     private float _throttlePercent;
     private float _currentVelocity;
     private float _currentAcceleration;
@@ -114,6 +115,7 @@ public class ShipMovement : MonoBehaviour
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         maxAngularVelocity = stats.maxAngularVelocity;
         _rb.inertiaTensor = new Vector3(150,150,150);
+        _currentBoost = maxBoost;
 
     }
 
@@ -157,9 +159,10 @@ public class ShipMovement : MonoBehaviour
         
         if(VelocityPercent >= 0.1f) 
             _rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed);
-        
-        
-        
+
+        if (_isBoosting && !isLaunching)
+            CurrentBoost -= 20 * Time.deltaTime;
+
     }
 
     private void Update()
@@ -229,7 +232,7 @@ public class ShipMovement : MonoBehaviour
     public void OnBoost(InputAction.CallbackContext value)
     {
 
-        if (value.performed && _canBoost && !_isBoosting)
+        if (value.performed && CanBoost && !_isBoosting)
         {
             _impulseSource.GenerateImpulse();
             _boostHeld = true;
@@ -259,7 +262,7 @@ public class ShipMovement : MonoBehaviour
         if (value.canceled && isDrifting)
         {
             EndDrift(value.duration);
-            if(value.duration >= 1.5f && CanBoost) Launch(1.0f);
+            if(value.duration >= 1.5f && _canBoost) Launch(1.0f);
         }
     }
     
@@ -316,11 +319,10 @@ public class ShipMovement : MonoBehaviour
         isDrifting = false;
         if (duration >= .5f)
         {
-            
-            //test
-            //rb.velocity = transform.forward * rb.velocity.magnitude;
-            Debug.Log("aligned");
-           
+
+            CurrentBoost += 20 * (float)duration;
+            Debug.Log("boost: " + CurrentBoost);
+
         }
         
     }
@@ -331,8 +333,12 @@ public class ShipMovement : MonoBehaviour
     void SetAcceleration()
     {
         var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));
-
-        _currentAcceleration = evaluatedAcceleration + BoostModifier;
+        if(_currentBoost > 0)
+            _currentAcceleration = evaluatedAcceleration + BoostModifier;
+        else
+        {
+            _currentAcceleration = evaluatedAcceleration;
+        }
     }
 
     //******************************************************************************************************************
@@ -343,6 +349,7 @@ public class ShipMovement : MonoBehaviour
     {
         if(_canBoost)
         {
+            isLaunching = true;
             _impulseSource.GenerateImpulse();
             
             _canBoost = false;
@@ -356,6 +363,8 @@ public class ShipMovement : MonoBehaviour
                 IsBoosting = false;
                 
             }
+
+            isLaunching = false;
             _canBoost = true;
         }
     }

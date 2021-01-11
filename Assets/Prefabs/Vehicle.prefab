@@ -33900,6 +33900,7 @@ GameObject:
   - component: {fileID: 4319036128757792476}
   - component: {fileID: 6325789442059442063}
   - component: {fileID: 6561235110949854481}
+  - component: {fileID: 4636227398821765180}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Player
@@ -34262,6 +34263,18 @@ MonoBehaviour:
   boostSource: {fileID: 5430612743593077236}
   brakeSource: {fileID: 7376894513414248124}
   _shipSounds: {fileID: 11400000, guid: 5efd72d18d1ee4f42afad06c60f4282a, type: 2}
+--- !u!114 &4636227398821765180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9029730291296566631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4405fa42caedd3346a623d4d40bb03be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9029730291566671585
 GameObject:
   m_ObjectHideFlags: 0
