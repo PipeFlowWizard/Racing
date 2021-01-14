@@ -189,11 +189,10 @@ public class ShipMovement : MonoBehaviour
         if(!isDrifting)
         {
             _modifiedSteerValue = _rawSteerValue;
-            turningSpeed = 1.2f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
+            turningSpeed = 1.3f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
         }
         if (isDrifting)
         {
-            Debug.Log(_rb.angularVelocity.magnitude);
             switch (_mySteerDirection)
             {
                 case DriftDirection.RIGHT:
