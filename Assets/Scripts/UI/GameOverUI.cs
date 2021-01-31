@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class GameOverUI : MonoBehaviour
 {
     private bool gameOver = false;
+    public PlayerInput _controls;
 
     public GameObject ltDisplay;
     public LaptimeDisplay ltDisplayscript;
@@ -19,6 +21,7 @@ public class GameOverUI : MonoBehaviour
 
     void OnGameOver()
     {
+        _controls.SwitchCurrentActionMap("Menu");
         ltDisplay.SetActive(true);
         ltDisplayscript.DisplayText();
         if(gameOver==false)
@@ -33,6 +36,11 @@ public class GameOverUI : MonoBehaviour
             fadePlane.color = Color.Lerp(from,to,percent);
             yield return null;
         }
+    }
+
+    public void buttonpress()
+    {
+        Debug.Log("new map");
     }
     
 }

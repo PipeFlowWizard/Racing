@@ -189,7 +189,8 @@ public class ShipMovement : MonoBehaviour
         if(!isDrifting)
         {
             _modifiedSteerValue = _rawSteerValue;
-            turningSpeed = 1.3f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
+            //turningSpeed = 1.3f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
+            _rb.angularDrag = 2;
         }
         if (isDrifting)
         {
@@ -217,10 +218,12 @@ public class ShipMovement : MonoBehaviour
                 default:
                     break;
             }
-            turningSpeed = 1.7f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
-            
-            
+            //turningSpeed = 1.7f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
+            _rb.angularDrag = 1.0f;
+
+
         }
+        turningSpeed = 1.3f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
   
     }
 

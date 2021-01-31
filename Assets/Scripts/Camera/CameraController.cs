@@ -15,14 +15,16 @@ public class CameraController : MonoBehaviour
     [SerializeField] private ShipMovement shipMovement;
 
     public AnimationCurve cameraFOVCurve;
+    public AnimationCurve cameraOffsetCurve;
 
-    private CinemachineTransposer transposer;
+    private CinemachineTransposer transposer,transposer2;
     private Vector3 speedLinesTransformLocalPosition;
 
     private void Start()
     {
         speedLinesTransformLocalPosition = speedLines.transform.localPosition;
         transposer = virtualCamera1.GetCinemachineComponent<CinemachineTransposer>();
+        transposer2 = virtualCamera2.GetCinemachineComponent<CinemachineTransposer>();
     }
 
     private void Update()
@@ -38,11 +40,14 @@ public class CameraController : MonoBehaviour
         virtualCamera2.m_Lens.FieldOfView = Mathf.Lerp(minFov, maxFov, percent);
     }
 
+    public float maxCameraOffset = 8; 
+    public float minCameraOffset = 5;
     public void SetCameraZOffset()
     {
-        var percent = cameraFOVCurve.Evaluate(shipMovement.VelocityPercent);
+        var percent = cameraOffsetCurve.Evaluate(shipMovement.VelocityPercent);
         speedLinesTransformLocalPosition.z = Mathf.Lerp(25f, 5f, percent);
-        transposer.m_FollowOffset.z = Mathf.Lerp(-8, -5, percent);
+        transposer.m_FollowOffset.z = Mathf.Lerp(-1 *maxCameraOffset, -1 * minCameraOffset, percent);
+        transposer2.m_FollowOffset.z = Mathf.Lerp(-1 *maxCameraOffset, -1 * minCameraOffset, percent);
     }
 
 }
