@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,6 +9,8 @@ public class GameOverUI : MonoBehaviour
 {
     private bool gameOver = false;
     public PlayerInput _controls;
+    public GameObject scorePanel;
+    public GameObject fadePanel;
 
     public GameObject ltDisplay;
     public LaptimeDisplay ltDisplayscript;
@@ -19,10 +22,19 @@ public class GameOverUI : MonoBehaviour
         FindObjectOfType<LapCounter>().OnRaceEnd += OnGameOver;
     }
 
+    public void OnGUI()
+    {
+        if (GUILayout.Button("End Game"))
+        {
+            OnGameOver();
+        }
+    }
+
     void OnGameOver()
     {
         _controls.SwitchCurrentActionMap("Menu");
         ltDisplay.SetActive(true);
+        fadePanel.SetActive(true);
         ltDisplayscript.DisplayText();
         if(gameOver==false)
         StartCoroutine(Fade (Color.clear, Color.black, 1));
@@ -36,11 +48,7 @@ public class GameOverUI : MonoBehaviour
             fadePlane.color = Color.Lerp(from,to,percent);
             yield return null;
         }
-    }
-
-    public void buttonpress()
-    {
-        Debug.Log("new map");
+        scorePanel.SetActive(true);
     }
     
 }

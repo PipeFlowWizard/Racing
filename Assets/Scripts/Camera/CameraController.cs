@@ -30,7 +30,7 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         SetCameraFOV();
-        SetCameraZOffset();
+        //SetCameraZOffset();
     }
 
     public void SetCameraFOV()
@@ -40,8 +40,8 @@ public class CameraController : MonoBehaviour
         virtualCamera2.m_Lens.FieldOfView = Mathf.Lerp(minFov, maxFov, percent);
     }
 
-    public float maxCameraOffset = 8; 
-    public float minCameraOffset = 5;
+    public float maxCameraOffset = 1; 
+    public float minCameraOffset = 0;
     public void SetCameraZOffset()
     {
         var percent = cameraOffsetCurve.Evaluate(shipMovement.VelocityPercent);

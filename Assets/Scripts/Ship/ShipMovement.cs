@@ -306,7 +306,7 @@ public class ShipMovement : MonoBehaviour
     public void StartDrift()
     {
         isDrifting = true; 
-        _camera.Priority = 3;
+        //_camera.Priority = 3;
         Vector3 driftDirection = Vector3.Lerp(transform.forward, _rb.velocity.normalized, 0.5f);
         _rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
         
@@ -317,7 +317,7 @@ public class ShipMovement : MonoBehaviour
 
     public void EndDrift(double duration)
     {
-        _camera.Priority = 1;
+        //_camera.Priority = 1;
         isDrifting = false;
         if (duration >= .5f)
         {
