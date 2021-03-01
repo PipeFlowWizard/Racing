@@ -65,6 +65,22 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""Up Shift"",
+                    ""type"": ""Button"",
+                    ""id"": ""d581214d-8a01-4299-8272-c241302b14e3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""Down Shift"",
+                    ""type"": ""Button"",
+                    ""id"": ""028cb599-3743-402d-b773-1e589857627e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
                 }
             ],
             ""bindings"": [
@@ -131,6 +147,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee97d092-c493-48c8-8d3c-952863a85a34"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Up Shift"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0349363f-8025-4216-aa23-5bb76f4dd1fe"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Down Shift"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -286,6 +324,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Gameplay_Stop = m_Gameplay.FindAction("Stop", throwIfNotFound: true);
         m_Gameplay_Boost = m_Gameplay.FindAction("Boost", throwIfNotFound: true);
         m_Gameplay_Pause = m_Gameplay.FindAction("Pause", throwIfNotFound: true);
+        m_Gameplay_UpShift = m_Gameplay.FindAction("Up Shift", throwIfNotFound: true);
+        m_Gameplay_DownShift = m_Gameplay.FindAction("Down Shift", throwIfNotFound: true);
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_Navigate = m_Menu.FindAction("Navigate", throwIfNotFound: true);
@@ -347,6 +387,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Gameplay_Stop;
     private readonly InputAction m_Gameplay_Boost;
     private readonly InputAction m_Gameplay_Pause;
+    private readonly InputAction m_Gameplay_UpShift;
+    private readonly InputAction m_Gameplay_DownShift;
     public struct GameplayActions
     {
         private @PlayerControls m_Wrapper;
@@ -357,6 +399,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Stop => m_Wrapper.m_Gameplay_Stop;
         public InputAction @Boost => m_Wrapper.m_Gameplay_Boost;
         public InputAction @Pause => m_Wrapper.m_Gameplay_Pause;
+        public InputAction @UpShift => m_Wrapper.m_Gameplay_UpShift;
+        public InputAction @DownShift => m_Wrapper.m_Gameplay_DownShift;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -384,6 +428,12 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Pause.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnPause;
                 @Pause.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnPause;
                 @Pause.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnPause;
+                @UpShift.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnUpShift;
+                @UpShift.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnUpShift;
+                @UpShift.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnUpShift;
+                @DownShift.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnDownShift;
+                @DownShift.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnDownShift;
+                @DownShift.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnDownShift;
             }
             m_Wrapper.m_GameplayActionsCallbackInterface = instance;
             if (instance != null)
@@ -406,6 +456,12 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Pause.started += instance.OnPause;
                 @Pause.performed += instance.OnPause;
                 @Pause.canceled += instance.OnPause;
+                @UpShift.started += instance.OnUpShift;
+                @UpShift.performed += instance.OnUpShift;
+                @UpShift.canceled += instance.OnUpShift;
+                @DownShift.started += instance.OnDownShift;
+                @DownShift.performed += instance.OnDownShift;
+                @DownShift.canceled += instance.OnDownShift;
             }
         }
     }
@@ -475,6 +531,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnStop(InputAction.CallbackContext context);
         void OnBoost(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
+        void OnUpShift(InputAction.CallbackContext context);
+        void OnDownShift(InputAction.CallbackContext context);
     }
     public interface IMenuActions
     {

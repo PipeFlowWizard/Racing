@@ -15,7 +15,7 @@ MonoBehaviour:
   engineClip: {fileID: 8300000, guid: bfc4501b50df7c94498fc8078a747360, type: 3}
   boostClip: {fileID: 8300000, guid: 00a896d3b296b8b42a05cb0a7fa05e4b, type: 3}
   brakeClip: {fileID: 8300000, guid: ec2a31322677caf4e89fd54e0bca622a, type: 3}
-  maxVelocity: 150
+  maxVelocity: 200
   maxAngularVelocity: 4
   maxAcceleration: 7
   boostModifier: 3
@@ -34,8 +34,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.11879803
     - serializedVersion: 3
-      time: 0.05039367
-      value: 0.099987805
+      time: 0.23357543
+      value: 0.53846437
       inSlope: 0.08105781
       outSlope: 0.08105781
       tangentMode: 0
@@ -96,6 +96,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  yawSpeed: 450
+  yawSpeed: 350
   rollSpeed: 550
   pitchSpeed: 450

@@ -141,13 +141,14 @@ public class ShipMovement : MonoBehaviour
         }
     }
 
+    public float accelerationMultiplier = 10f;
     void FixedUpdate()
     {
         SetAcceleration();
         
         _currentVelocity = _rb.velocity.magnitude;
         
-        _rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward, ForceMode.VelocityChange);
+        _rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward * accelerationMultiplier, ForceMode.Acceleration);
         if (!isDrifting)
         {
             
