@@ -1,0 +1,9 @@
+*
+
+!.gitignore
+
+!/Textures/
+!/Scripts/
+!/Materials/
+!/Prefabs/
+!/Scenes/
