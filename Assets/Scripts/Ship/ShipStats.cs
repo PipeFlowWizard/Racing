@@ -14,7 +14,7 @@ public class ShipStats : ScriptableObject
     public float maxVelocity;
     public float maxAngularVelocity = 7f;
     public float maxAcceleration;
-    public int boostModifier;
+    public float boostModifier;
 
     public float maxDrag;
     public float minDrag;

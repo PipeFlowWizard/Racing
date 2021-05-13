@@ -11,9 +11,12 @@ public class ShipSoundManager : MonoBehaviour
     private bool _isBoosting = false;
     
     public AnimationCurve pitchCurve;
+    public float pitchMultiplier = 7;
     public AudioSource engineSource;
     public AudioSource boostSource;
     public AudioSource brakeSource;
+
+    public AudioSource[] sources = new AudioSource[3];
 
     [SerializeField] private ShipSounds _shipSounds;
     
@@ -29,6 +32,10 @@ public class ShipSoundManager : MonoBehaviour
 
         brakeSource.loop = true;
         brakeSource.clip = _shipMovement.stats.brakeClip;
+        sources[0] = engineSource;
+        sources[1] = boostSource;
+        sources[2] = brakeSource;
+
     }
 
     private void FixedUpdate()
@@ -38,8 +45,17 @@ public class ShipSoundManager : MonoBehaviour
         Brake();
         SetBoostLoopVolume();
     }
-    
-    
+
+    public void ToggleVolume()
+    {
+        Invoke("MuteUnMute",0.1f);
+    }
+
+    public void MuteUnMute()
+    {
+        engineSource.mute = !engineSource.mute;
+       
+    }
     
     
     public void SetBoostLoopVolume()
@@ -57,7 +73,7 @@ public class ShipSoundManager : MonoBehaviour
 
     public void Throttle()
     {
-        engineSource.pitch = pitchCurve.Evaluate(_shipMovement.VelocityPercent);
+        engineSource.pitch =  pitchMultiplier * pitchCurve.Evaluate(_shipMovement.AccelerationPercent) *_shipMovement.VelocityPercent;
         engineSource.volume = Mathf.Lerp(.1f, .7f, _shipMovement.VelocityPercent+.3f);
     }
 

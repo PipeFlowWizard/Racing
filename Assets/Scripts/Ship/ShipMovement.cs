@@ -22,13 +22,19 @@ public class ShipMovement : MonoBehaviour
 
     //Properties
     public float VelocityPercent => _currentVelocity / stats.maxVelocity;
+    public float AccelerationPercent => stats.accelerationCurve.Evaluate(VelocityPercent);
     public float CurrentVelocity => _currentVelocity;
+
+    public Vector3 Velocity
+    {
+        get => _rb.velocity;
+    }
+    
     public float CurrentAcceleration => _currentAcceleration;
     public bool CanBoost => _canBoost && _currentBoost > 0;
     public float BoostModifier
     {
         get => _boostModifier;
-        set => _boostModifier = (stats.boostModifier * stats.boostCurve.Evaluate(value));
     }
     public bool IsBoosting
     {
@@ -55,10 +61,11 @@ public class ShipMovement : MonoBehaviour
     //Variables - Fields
     
     private float turningSpeed = 1;
-    private float maxAngularVelocity;
+    private float _maxAngularVelocity;
     [Range(0f,0.05f)]
     public float driftThreshold = 0.025f;
-    private float _boostModifier;
+    [SerializeField]
+    private float _boostModifier = 1.2f;
     public float maxBoost;
     private float _currentBoost;
 
@@ -73,9 +80,12 @@ public class ShipMovement : MonoBehaviour
     private float _throttlePercent;
     private float _currentVelocity;
     private float _currentAcceleration;
+    private State _currentState;
     private Vector2 _modifiedSteerValue;
     private Vector2 _rawSteerValue;
     private Vector2 _rollValue;
+
+    public State[] availableStates;
 
     //******************************************************************************************************************
 
@@ -107,16 +117,25 @@ public class ShipMovement : MonoBehaviour
     //******************************************************************************************************************
 
     //Functions
-    
+    //TODO: Rewrite class using the state pattern, overload functions to allow for mlagents implementation
     #region UnityCallbacks
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
-        maxAngularVelocity = stats.maxAngularVelocity;
+        _maxAngularVelocity = stats.maxAngularVelocity;
         _rb.inertiaTensor = new Vector3(150,150,150);
         _currentBoost = maxBoost;
 
+        availableStates = new State[]
+        {
+            new ThrottleState(this, _rb),
+            new IddleState(this, _rb),
+            new DriftState(this, _rb),
+            new BoostState(),
+            
+
+        };
     }
 
     private void OnEnable()
@@ -128,51 +147,30 @@ public class ShipMovement : MonoBehaviour
     }
 
 
-
-    public void drawline(ScriptableRenderContext ctx,Camera cam)
-    {
-        RaycastHit hit;
-        if(isDrifting)
-        {
-            if (Physics.Raycast(transform.position, transform.forward, out hit, 200))
-                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.red);
-            else
-                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.green);
-        }
-    }
-
     public float accelerationMultiplier = 10f;
+
     void FixedUpdate()
     {
         SetAcceleration();
         
         _currentVelocity = _rb.velocity.magnitude;
         
-        _rb.AddForce(_throttlePercent * _currentAcceleration * transform.forward * accelerationMultiplier, ForceMode.Acceleration);
-        if (!isDrifting)
-        {
-            
-           _rb.velocity = (_rb.velocity + (5 * transform.forward)).normalized * _rb.velocity.magnitude;
-            // rb.velocity = transform.forward * rb.velocity.magnitude;
-        }
+        _rb.AddForce(transform.forward * (_throttlePercent * _currentAcceleration * stats.maxAcceleration), ForceMode.Acceleration);
 
-        _rb.maxAngularVelocity = Mathf.Lerp(maxAngularVelocity, maxAngularVelocity / 2, VelocityPercent);
+        _rb.maxAngularVelocity = Mathf.Lerp(_maxAngularVelocity/2, _maxAngularVelocity, VelocityPercent);
         
         if(VelocityPercent >= 0.1f) 
-            _rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed);
+            _rb.AddRelativeTorque(_modifiedSteerValue.y * stats.pitchSpeed* turningSpeed, _modifiedSteerValue.x * stats.yawSpeed * turningSpeed, -_rollValue.x * stats.rollSpeed, ForceMode.Acceleration);
 
         if (_isBoosting && !isLaunching)
             CurrentBoost -= 20 * Time.deltaTime;
 
     }
 
-    private void Update()
-    {
-    }
-
     #endregion
-    
+
     #region InputCallbacks
+
     public void OnThrottle(InputAction.CallbackContext value)
     {
         _throttlePercent = value.ReadValue<float>();
@@ -187,14 +185,17 @@ public class ShipMovement : MonoBehaviour
     public void OnSteer(InputAction.CallbackContext value)
     {
         _rawSteerValue = value.ReadValue<Vector2>();
+        _currentState.Steer(_rawSteerValue);
         if(!isDrifting)
         {
+            _maxAngularVelocity = stats.maxAngularVelocity;
             _modifiedSteerValue = _rawSteerValue;
             //turningSpeed = 1.3f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
             _rb.angularDrag = 2;
         }
         if (isDrifting)
         {
+            _maxAngularVelocity = stats.maxAngularVelocity * driftModifier;
             switch (_mySteerDirection)
             {
                 case DriftDirection.RIGHT:
@@ -216,11 +217,10 @@ public class ShipMovement : MonoBehaviour
                 case DriftDirection.STRAIGHT:
                     _modifiedSteerValue = _rawSteerValue;
                     break;
-                default:
-                    break;
             }
+            
             //turningSpeed = 1.7f * turnSpeedVSVelocityCurve.Evaluate(VelocityPercent);
-            _rb.angularDrag = 1.0f;
+            _rb.angularDrag = 1.5f;
 
 
         }
@@ -232,6 +232,7 @@ public class ShipMovement : MonoBehaviour
     {
         _rollValue = value.ReadValue<Vector2>();
     }
+
     public void OnBoost(InputAction.CallbackContext value)
     {
 
@@ -240,18 +241,17 @@ public class ShipMovement : MonoBehaviour
             _impulseSource.GenerateImpulse();
             _boostHeld = true;
             IsBoosting = true;
-            BoostModifier = 0f;
+            
         }
 
         if (value.canceled && _isBoosting)
         {
             _boostHeld = false;
             IsBoosting = false;
-            BoostModifier = 1;
         }
         
     }
-    
+
     public void OnStop(InputAction.CallbackContext value)
     {
         Debug.Log("Stop called");
@@ -268,8 +268,20 @@ public class ShipMovement : MonoBehaviour
             if(value.duration >= 1.5f && _canBoost) Launch(1.0f);
         }
     }
-    
+
     #endregion
+    
+    public void SetState(State state)
+    {
+        if (_currentState != null)
+            _currentState.OnStateExit();
+
+        _currentState = state;
+        gameObject.name = "Cube - " + state.GetType().Name;
+
+        if (_currentState != null)
+            _currentState.OnStateEnter();
+    }
 
     public void SetSteerDirection(float stickValue)
     {
@@ -289,7 +301,7 @@ public class ShipMovement : MonoBehaviour
 
     public bool CanDrift()
     {
-       if(VelocityPercent <= 0.5f)
+       if(VelocityPercent <= 0.25f)
         return false;
        else if(_mySteerDirection == DriftDirection.STRAIGHT)
            return false;
@@ -301,23 +313,29 @@ public class ShipMovement : MonoBehaviour
     {
         StartCoroutine(LaunchCoroutine(time));
     }
-    
+
     // decouple camera control
-    public CinemachineVirtualCamera _camera; 
+
+    public CinemachineVirtualCamera _camera;
+
+    public float driftModifier = 1.2f;
+
     public void StartDrift()
     {
         isDrifting = true; 
         //_camera.Priority = 3;
         Vector3 driftDirection = Vector3.Lerp(transform.forward, _rb.velocity.normalized, 0.5f);
-        _rb.AddForce(_currentAcceleration * 1.2f * driftDirection, ForceMode.VelocityChange);
-        
-        
-        
+        _rb.drag = .8f;
+
+
+
     }
 
 
     public void EndDrift(double duration)
     {
+        _rb.drag = 1;
+        _rb.velocity += transform.forward * _boostModifier * _rb.velocity.magnitude/10;
         //_camera.Priority = 1;
         isDrifting = false;
         if (duration >= .5f)
@@ -325,27 +343,32 @@ public class ShipMovement : MonoBehaviour
 
             CurrentBoost += 20 * (float)duration;
             Debug.Log("boost: " + CurrentBoost);
+            
 
         }
         
     }
 
-    // Set acceleration to a percentage of the max based on the acceleration curve
 
+    // Set acceleration to a percentage of the max based on the acceleration curve
 
     void SetAcceleration()
     {
         var evaluatedAcceleration = ((stats.maxAcceleration * stats.accelerationCurve.Evaluate(VelocityPercent)));
-        if(_currentBoost > 0)
-            _currentAcceleration = evaluatedAcceleration + BoostModifier;
+        if (_currentBoost > 0)
+        {
+            var boost = _boostModifier * Mathf.Lerp(_boostModifier, 1f, VelocityPercent);
+        _currentAcceleration = _isBoosting ? evaluatedAcceleration * boost : evaluatedAcceleration;
+        }
         else
         {
             _currentAcceleration = evaluatedAcceleration;
         }
     }
 
+
     //******************************************************************************************************************
-    
+
     // Coroutines
 
     IEnumerator LaunchCoroutine(float time)
@@ -357,12 +380,10 @@ public class ShipMovement : MonoBehaviour
             
             _canBoost = false;
             IsBoosting = true;
-            BoostModifier = 0f;
             yield return new WaitForSeconds(time);
             
             if(!_boostHeld)
             {
-                BoostModifier = 1f;
                 IsBoosting = false;
                 
             }
@@ -371,6 +392,17 @@ public class ShipMovement : MonoBehaviour
             _canBoost = true;
         }
     }
- 
+
     //******************************************************************************************************************
+    public void drawline(ScriptableRenderContext ctx,Camera cam)
+    {
+        RaycastHit hit;
+        if(isDrifting)
+        {
+            if (Physics.Raycast(transform.position, transform.forward, out hit, 200))
+                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.red);
+            else
+                Shapes.Draw.Line(transform.position, transform.forward * 200 + transform.position, Color.green);
+        }
+    }
 }
