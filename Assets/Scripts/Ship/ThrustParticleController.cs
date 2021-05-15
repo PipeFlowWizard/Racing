@@ -1,32 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class ThrustParticleController : MonoBehaviour
+namespace Racing.Ship
 {
-    private ParticleSystem _particleSystem;
-
-    private Rigidbody rb;
-    // Start is called before the first frame update
-    void Start()
+    public class ThrustParticleController : MonoBehaviour
     {
-        rb = GetComponentInParent<Rigidbody>();
-        _particleSystem = GetComponent<ParticleSystem>();
+        private ParticleSystem _particleSystem;
+
+        private Rigidbody rb;
+        // Start is called before the first frame update
+        void Start()
+        {
+            rb = GetComponentInParent<Rigidbody>();
+            _particleSystem = GetComponent<ParticleSystem>();
         
-    }
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
+        // Update is called once per frame
+        void Update()
+        {
         
-    }
+        }
 
 
 
-    void SetEmissionDirection(Vector3 inputVelocity)
-    {
-        //_particleSystem.; = -1 * inputVelocity.normalized;
-    }
+        void SetEmissionDirection(Vector3 inputVelocity)
+        {
+            //_particleSystem.; = -1 * inputVelocity.normalized;
+        }
     
     
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Racing.Ship;
 using UnityEngine;
 
 public class PowerUp : MonoBehaviour

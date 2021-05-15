@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Racing.Ship;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

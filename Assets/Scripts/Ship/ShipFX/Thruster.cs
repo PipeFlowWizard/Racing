@@ -1,54 +1,53 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
+﻿using UnityEngine;
 
-public class Thruster : MonoBehaviour
+namespace Racing.Ship.ShipFX
 {
+    public class Thruster : MonoBehaviour
+    {
     
 
-    [SerializeField]
-    private float maxFlameLength = 2.5f;
-    [SerializeField]
-    private float basicFlameLength = 1;
+        [SerializeField]
+        private float maxFlameLength = 2.5f;
+        [SerializeField]
+        private float basicFlameLength = 1;
    
-    [Range(0,1)]
-    private float _strength = 0.5f;
-    private float _power = 0;
-    private Vector3 scaleChange;
+        [Range(0,1)]
+        private float _strength = 0.5f;
+        private float _power = 0;
+        private Vector3 scaleChange;
     
 
-    public float Power
-    {
-        get => _power;
-        set => _power = value;
-    }
-
-    public float Strength
-    {
-        get => _strength;
-        set
+        public float Power
         {
-            if (value >= 0 && value <= 1)
-                _strength += (value - _strength) * 8 * Time.deltaTime;
+            get => _power;
+            set => _power = value;
         }
-    }
 
-    private void Start()
-    {
-        scaleChange = transform.localScale;
-    }
+        public float Strength
+        {
+            get => _strength;
+            set
+            {
+                if (value >= 0 && value <= 1)
+                    _strength += (value - _strength) * 8 * Time.deltaTime;
+            }
+        }
+
+        private void Start()
+        {
+            scaleChange = transform.localScale;
+        }
     
-    private void Update()
-    {
-        SetFlameScale();    
-    }
+        private void Update()
+        {
+            SetFlameScale();    
+        }
 
-    private void SetFlameScale()
-    {
-        transform.localScale = new Vector3(scaleChange.x,scaleChange.y,_power * Mathf.Lerp(basicFlameLength,maxFlameLength,_strength)); ;
-    }
+        private void SetFlameScale()
+        {
+            transform.localScale = new Vector3(scaleChange.x,scaleChange.y,_power * Mathf.Lerp(basicFlameLength,maxFlameLength,_strength)); ;
+        }
 
     
+    }
 }

@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class DriftTrails : MonoBehaviour
+namespace Racing.Ship.ShipFX
 {
-    [SerializeField] private ParticleSystem[] _driftTrails;
-
-    private ShipMovement _shipMovement;
-
-    private void Start()
+    public class DriftTrails : MonoBehaviour
     {
-        _shipMovement = GetComponentInParent<ShipMovement>();
-    }
+        [SerializeField] private ParticleSystem[] _driftTrails;
 
-    private void Update()
-    {
-        var emissionModule = _driftTrails[0].emission;
-        emissionModule.enabled = _shipMovement.isDrifting;
-        var emission = _driftTrails[1].emission;
-        emission.enabled = _shipMovement.isDrifting;
+        private ShipMovement _shipMovement;
+
+        private void Start()
+        {
+            _shipMovement = GetComponentInParent<ShipMovement>();
+        }
+
+        private void Update()
+        {
+            var emissionModule = _driftTrails[0].emission;
+            emissionModule.enabled = _shipMovement.CurrentState == _shipMovement.availableStates[2];
+            var emission = _driftTrails[1].emission;
+            emission.enabled = _shipMovement.CurrentState == _shipMovement.availableStates[2];
         
+        }
     }
 }
