@@ -254,8 +254,8 @@ namespace Racing.Ship
                 EndEpisode();
             }
             
-            if(VelocityPercent > 0.4f) AddReward(VelocityPercent*0.1f);
-            else AddReward(-0.1f);
+            if(VelocityPercent > 0.4f) AddReward(VelocityPercent*0.5f);
+            else AddReward(-0.5f);
             
             // Throttle
            var throttle = Mathf.Clamp(actions.ContinuousActions[3],0f,1f);

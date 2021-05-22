@@ -37,7 +37,10 @@ public class GameOverUI : MonoBehaviour
         fadePanel.SetActive(true);
         ltDisplayscript.DisplayText();
         if(gameOver==false)
-        StartCoroutine(Fade (Color.clear, Color.black, 1));
+        {
+            StartCoroutine(Fade(Color.clear, Color.black, 1));
+            GameManager.Instance.EndGameDelay(20f);
+        }
     }
     IEnumerator Fade(Color from, Color to, float time) {
         float speed = 1 / time;
