@@ -1,4 +1,4 @@
-# Racing - Prototype
+# Spaceship Controller - Prototype
 
 ![Screenshot](https://github.com/PipeFlowWizard/Racing/blob/master/RacingScreenShot.png)
 
